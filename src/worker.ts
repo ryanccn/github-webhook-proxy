@@ -20,9 +20,13 @@ app.post(`/:path`, async (c) => {
 
 	try {
 		if (event === "push") {
-			if ((data.ref as string).startsWith("renovate/")) suppress = true;
+			if ((data.ref as string).startsWith("refs/heads/renovate/")) {
+				suppress = true;
+			}
 		} else if (event === "pull_request") {
-			if (data.pull_request.user.id === 29139614) suppress = true;
+			if (data.pull_request.user.id === 29139614) {
+				suppress = true;
+			}
 		}
 	} catch (e) {
 		console.error(e);
