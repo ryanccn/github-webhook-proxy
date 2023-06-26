@@ -1,0 +1,8 @@
+.DS_Store
+
+.dev.vars
+
+.vscode/
+.idea/
+
+node_modules/
