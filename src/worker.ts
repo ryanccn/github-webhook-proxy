@@ -24,7 +24,11 @@ app.post(`/:path`, async (c) => {
 				suppress = true;
 			}
 		} else if (event === "pull_request") {
-			if (data.pull_request.user.id === 29139614) {
+			if (data.pull_request.user?.id === 29139614) {
+				suppress = true;
+			}
+		} else if (event === "issue") {
+			if (data.issue.user?.id === 29139614) {
 				suppress = true;
 			}
 		}
