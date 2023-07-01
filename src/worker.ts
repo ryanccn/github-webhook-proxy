@@ -7,6 +7,9 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+const RENOVATE_ID = 29139614;
+const DEPENDABOT_ID = 49699333;
+
 app.post(`/:path`, async (c) => {
 	const path = c.req.param("path");
 	if (path !== c.env.SECRET) return c.notFound();
@@ -20,15 +23,24 @@ app.post(`/:path`, async (c) => {
 
 	try {
 		if (event === "push") {
-			if ((data.ref as string).startsWith("refs/heads/renovate/")) {
+			if (
+				(data.ref as string)?.startsWith("refs/heads/renovate/") ||
+				(data.ref as string)?.startsWith("refs/heads/dependabot/")
+			) {
 				suppress = true;
 			}
 		} else if (event === "pull_request") {
-			if (data.pull_request.user?.id === 29139614) {
+			if (
+				data.pull_request.user?.id === RENOVATE_ID ||
+				data.pull_request.user?.id === DEPENDABOT_ID
+			) {
 				suppress = true;
 			}
 		} else if (event === "issue") {
-			if (data.issue.user?.id === 29139614) {
+			if (
+				data.issue.user?.id === RENOVATE_ID ||
+				data.issue.user?.id === DEPENDABOT_ID
+			) {
 				suppress = true;
 			}
 		}
