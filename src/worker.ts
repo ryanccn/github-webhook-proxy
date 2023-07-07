@@ -87,6 +87,7 @@ app.post(`/:key`, async (c) => {
 			normalizedHeader.startsWith("x-github-") ||
 			normalizedHeader === "user-agent"
 		)
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			proxyHeaders.append(header, c.req.header(header)!);
 	}
 
