@@ -11,6 +11,10 @@ const app = new Hono<{ Bindings: Bindings }>();
 const RENOVATE_ID = 29139614;
 const DEPENDABOT_ID = 49699333;
 
+app.get("/", (c) =>
+	c.redirect("https://github.com/ryanccn/github-webhook-proxy")
+);
+
 app.post(`/:key`, async (c) => {
 	const key = c.req.param("key");
 	const webhookSecret = await c.env.WEBHOOK_SECRETS.get(`secret:${key}`);
