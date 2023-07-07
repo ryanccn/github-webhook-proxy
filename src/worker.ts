@@ -106,4 +106,9 @@ app.post(`/:key`, async (c) => {
 	return c.json({ ok: true, suppressed: false }, 202);
 });
 
+app.onError((error, c) => {
+	console.error(error);
+	return c.json({ error: "An internal server error occurred" }, 500);
+});
+
 export default app;
