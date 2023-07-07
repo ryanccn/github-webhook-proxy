@@ -3,3 +3,9 @@ main = "src/worker.ts"
 compatibility_date = "2023-06-26"
 
 workers_dev = false
+send_metrics = false
+
+[[kv_namespaces]]
+binding = "KV"
+id = "9f64095cc2fc4e81a2ca6ef5f66d768e"
+preview_id = "c1bbbcd86efe4d91a5b3391a5b862a86"

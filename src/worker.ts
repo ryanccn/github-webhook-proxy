@@ -1,8 +1,9 @@
 import { Hono } from "hono";
+import { validate } from "./lib";
 
 type Bindings = {
 	UPSTREAM_URL: string;
-	SECRET: string;
+	WEBHOOK_SECRETS: KVNamespace;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -10,14 +11,36 @@ const app = new Hono<{ Bindings: Bindings }>();
 const RENOVATE_ID = 29139614;
 const DEPENDABOT_ID = 49699333;
 
-app.post(`/:path`, async (c) => {
-	const path = c.req.param("path");
-	if (path !== c.env.SECRET) return c.notFound();
+app.post(`/:key`, async (c) => {
+	const key = c.req.param("key");
+	const webhookSecret = await c.env.WEBHOOK_SECRETS.get(`secret:${key}`);
 
-	const data = await c.req.json();
+	if (!webhookSecret) {
+		return c.notFound();
+	}
+
+	const rawData = await c.req.arrayBuffer();
+
+	const upstreamSignature = c.req.header("x-hub-signature-256");
+	if (!upstreamSignature) return c.json({ error: "Unauthorized" }, 401);
+
+	const signatureIsValid = await validate({
+		data: rawData,
+		secret: webhookSecret,
+		signature: upstreamSignature,
+	});
+
+	if (!signatureIsValid) return c.json({ error: "Unauthorized" }, 401);
+
 	const event = c.req.header("x-github-event");
-	if (!event)
-		return c.json({ ok: false, error: "No X-GitHub-Event provided!" }, 400);
+	if (!event) {
+		return c.json(
+			{ ok: false, error: "No x-github-event header provided!" },
+			400
+		);
+	}
+
+	const data = JSON.parse(new TextDecoder().decode(rawData));
 
 	let suppress = false;
 
