@@ -26,5 +26,5 @@ export const validate = async ({
 		.map((x) => x.toString(16).padStart(2, "0"))
 		.join("");
 
-	return actualSignatureHex === signature;
+	return "sha256=" + actualSignatureHex === signature;
 };
