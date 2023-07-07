@@ -17,7 +17,7 @@ app.get("/", (c) =>
 
 app.post(`/:key`, async (c) => {
 	const key = c.req.param("key");
-	const webhookSecret = await c.env.WEBHOOK_SECRETS.get(`secret:${key}`);
+	const webhookSecret = await c.env.WEBHOOK_SECRETS.get(key);
 
 	if (!webhookSecret) {
 		return c.notFound();
