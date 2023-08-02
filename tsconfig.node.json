@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"lib": ["esnext", "dom", "dom.iterable"],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"types": ["node"],
+		"resolveJsonModule": true,
+		"allowJs": true,
+		"checkJs": false,
+		"downlevelIteration": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"useUnknownInCatchVariables": true,
+		"skipLibCheck": true,
+		"composite": true
+	},
+	"include": ["setup.ts"]
+}

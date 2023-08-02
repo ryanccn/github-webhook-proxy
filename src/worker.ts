@@ -1,9 +1,11 @@
 import { Hono } from "hono";
-import { validate } from "./lib";
+import { object, string, minLength, safeParse } from "valibot";
+import { generateSecret, validate } from "./lib";
 
 type Bindings = {
 	UPSTREAM_URL: string;
 	WEBHOOK_SECRETS: KVNamespace;
+	API_SECRET?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -11,9 +13,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 const RENOVATE_ID = 29139614;
 const DEPENDABOT_ID = 49699333;
 
-app.get("/", (c) =>
-	c.redirect("https://github.com/ryanccn/github-webhook-proxy")
-);
+app.get("/", (c) => c.redirect("https://github.com/ryanccn/github-webhook-proxy"));
 
 app.post(`/:key`, async (c) => {
 	const key = c.req.param("key");
@@ -38,10 +38,7 @@ app.post(`/:key`, async (c) => {
 
 	const event = c.req.header("x-github-event");
 	if (!event) {
-		return c.json(
-			{ ok: false, error: "No x-github-event header provided!" },
-			400
-		);
+		return c.json({ ok: false, error: "No x-github-event header provided!" }, 400);
 	}
 
 	const data = JSON.parse(new TextDecoder().decode(rawData));
@@ -64,10 +61,7 @@ app.post(`/:key`, async (c) => {
 				suppress = true;
 			}
 		} else if (event === "issue") {
-			if (
-				data.issue.user?.id === RENOVATE_ID ||
-				data.issue.user?.id === DEPENDABOT_ID
-			) {
+			if (data.issue.user?.id === RENOVATE_ID || data.issue.user?.id === DEPENDABOT_ID) {
 				suppress = true;
 			}
 		}
@@ -83,10 +77,7 @@ app.post(`/:key`, async (c) => {
 	proxyHeaders.set("content-type", "application/json");
 	for (const header of c.req.headers.keys()) {
 		const normalizedHeader = header.toLowerCase();
-		if (
-			normalizedHeader.startsWith("x-github-") ||
-			normalizedHeader === "user-agent"
-		)
+		if (normalizedHeader.startsWith("x-github-") || normalizedHeader === "user-agent")
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			proxyHeaders.append(header, c.req.header(header)!);
 	}
@@ -98,13 +89,37 @@ app.post(`/:key`, async (c) => {
 	});
 
 	if (!upstreamRes.ok) {
-		return c.json(
-			{ ok: false, data: await upstreamRes.json() },
-			upstreamRes.status
-		);
+		return c.json({ ok: false, data: await upstreamRes.json() }, upstreamRes.status);
 	}
 
 	return c.json({ ok: true, suppressed: false }, 202);
+});
+
+const apiNewSchema = object({ name: string([minLength(1)]) });
+
+app.post("/api/new", async (c) => {
+	const authHeader = c.req.header("authorization");
+	if (!c.env.API_SECRET || authHeader !== `Bearer ${c.env.API_SECRET}`) {
+		return c.json({ ok: false, error: "unauthorized" }, 401);
+	}
+
+	const body = await c.req.json<unknown>();
+	const parsedBody = safeParse(apiNewSchema, body);
+
+	if (!parsedBody.success) {
+		return c.json({ ok: false, error: "bad request" }, 400);
+	}
+
+	const { name } = parsedBody.data;
+
+	const existing = await c.env.WEBHOOK_SECRETS.get(name);
+	if (existing) {
+		return c.json({ ok: false, error: "already exists" }, 400);
+	}
+
+	const secret = generateSecret();
+	await c.env.WEBHOOK_SECRETS.put(name, secret);
+	return c.json({ ok: true, secret });
 });
 
 app.onError((error, c) => {
