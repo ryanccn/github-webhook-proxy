@@ -5,6 +5,8 @@
 !.env.example
 .dev.vars
 
+.wrangler/
+
 .vscode/
 .idea/
 
