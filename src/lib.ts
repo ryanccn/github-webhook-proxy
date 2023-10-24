@@ -36,3 +36,6 @@ export const generateSecret = () => {
 
 	return hex(data);
 };
+
+export const normalizeDiscordWebhook = (webhook: string) =>
+	!webhook.endsWith("/github") ? webhook + "/github" : webhook;

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { object, string, minLength, safeParse } from "valibot";
-import { generateSecret, validate } from "./lib";
+
+import { generateSecret, normalizeDiscordWebhook, validate } from "./lib";
 
 type Bindings = {
 	UPSTREAM_URLS: string;
@@ -96,11 +97,13 @@ app.post(`/:key`, async (c) => {
 		upstreamUrl = upstreamUrls[Math.floor(Math.random() * upstreamUrls.length)];
 	}
 
-	const upstreamRes = await fetch(upstreamUrl, {
+	const upstreamRes = await fetch(normalizeDiscordWebhook(upstreamUrl), {
 		method: "POST",
 		body: JSON.stringify(data),
 		headers: proxyHeaders,
 	});
+
+	console.log(await upstreamRes.json());
 
 	if (!upstreamRes.ok) {
 		return c.json({ ok: false, data: await upstreamRes.json() }, upstreamRes.status);
