@@ -3,8 +3,13 @@ import { object, string, minLength, safeParse } from "valibot";
 import { generateSecret, validate } from "./lib";
 
 type Bindings = {
+	UPSTREAM_URLS: string;
+	/**
+	 * @deprecated
+	 */
 	UPSTREAM_URL: string;
 	WEBHOOK_SECRETS: KVNamespace;
+
 	API_SECRET?: string;
 };
 
@@ -75,14 +80,23 @@ app.post(`/:key`, async (c) => {
 
 	const proxyHeaders = new Headers();
 	proxyHeaders.set("content-type", "application/json");
-	for (const header of c.req.headers.keys()) {
+	for (const header of c.req.raw.headers.keys()) {
 		const normalizedHeader = header.toLowerCase();
 		if (normalizedHeader.startsWith("x-github-") || normalizedHeader === "user-agent")
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			proxyHeaders.append(header, c.req.header(header)!);
+			proxyHeaders.append(header, c.req.raw.headers.get(header)!);
 	}
 
-	const upstreamRes = await fetch(c.env.UPSTREAM_URL, {
+	let upstreamUrl: string;
+
+	if (c.env.UPSTREAM_URL) {
+		upstreamUrl = c.env.UPSTREAM_URL;
+	} else {
+		const upstreamUrls = c.env.UPSTREAM_URLS.split(",").filter(Boolean);
+		upstreamUrl = upstreamUrls[Math.floor(Math.random() * upstreamUrls.length)];
+	}
+
+	const upstreamRes = await fetch(upstreamUrl, {
 		method: "POST",
 		body: JSON.stringify(data),
 		headers: proxyHeaders,
