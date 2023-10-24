@@ -103,8 +103,6 @@ app.post(`/:key`, async (c) => {
 		headers: proxyHeaders,
 	});
 
-	console.log(await upstreamRes.json());
-
 	if (!upstreamRes.ok) {
 		return c.json({ ok: false, data: await upstreamRes.json() }, upstreamRes.status);
 	}
