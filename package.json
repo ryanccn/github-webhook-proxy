@@ -14,7 +14,7 @@
 		"valibot": "^0.19.0"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20231016.0",
+		"@cloudflare/workers-types": "^4.20231025.0",
 		"@microsoft/eslint-formatter-sarif": "^3.0.0",
 		"@types/node": "^20.8.8",
 		"@types/prompts": "^2.4.7",
