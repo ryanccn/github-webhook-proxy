@@ -16,7 +16,7 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20231016.0",
 		"@microsoft/eslint-formatter-sarif": "^3.0.0",
-		"@types/node": "^20.8.8",
+		"@types/node": "^20.8.10",
 		"@types/prompts": "^2.4.7",
 		"@typescript-eslint/eslint-plugin": "^6.9.0",
 		"@typescript-eslint/parser": "^6.9.0",
