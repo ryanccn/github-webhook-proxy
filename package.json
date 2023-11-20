@@ -10,7 +10,7 @@
 		"setup": "tsx setup.ts"
 	},
 	"dependencies": {
-		"hono": "^3.10.0",
+		"hono": "^3.10.1",
 		"valibot": "^0.20.1"
 	},
 	"devDependencies": {
