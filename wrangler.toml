@@ -1,6 +1,6 @@
 name = "github-webhook-proxy"
 main = "src/worker.ts"
-compatibility_date = "2023-10-25"
+compatibility_date = "2023-11-21"
 
 workers_dev = false
 send_metrics = false
