@@ -9,8 +9,8 @@ dependencies:
     specifier: ^3.10.2
     version: 3.10.2
   valibot:
-    specifier: ^0.21.0
-    version: 0.21.0
+    specifier: ^0.23.0
+    version: 0.23.0
 
 devDependencies:
   '@cloudflare/workers-types':
@@ -1841,8 +1841,8 @@ packages:
     resolution: {integrity: sha512-E8VjFIQ/TyQgp+TZfS6l8yp/xWppSAHzidGiRrqe4bK4XP9pTRyKFgGJpO3SN7zdX4DeomTrwaseCHovfpFcqQ==}
     dev: true
 
-  /valibot@0.21.0:
-    resolution: {integrity: sha512-XnzpX93b1vQL7CB3fHlhpLg7OutYpc3ke8SKOvp7IXgicRfTdP/w8+bf0DjhVsySq6YdF4Opld05mj6bTobo9g==}
+  /valibot@0.23.0:
+    resolution: {integrity: sha512-3draqnQrhygou2FUtVSfdzgCE4icqj6d4+Qg5ercN9WI/JI4hEMqvX2yQXyq7btlaobCGRgZAWMr7kWr3Dtxkw==}
     dev: false
 
   /which@2.0.2:
