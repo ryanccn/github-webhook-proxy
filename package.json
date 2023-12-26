@@ -10,24 +10,24 @@
 		"setup": "tsx setup.ts"
 	},
 	"dependencies": {
-		"hono": "^3.11.7",
+		"hono": "^3.11.10",
 		"valibot": "^0.24.1"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20231121.0",
+		"@cloudflare/workers-types": "^4.20231218.0",
 		"@microsoft/eslint-formatter-sarif": "^3.0.0",
-		"@types/node": "^20.10.4",
+		"@types/node": "^20.10.5",
 		"@types/prompts": "^2.4.9",
-		"@typescript-eslint/eslint-plugin": "^6.14.0",
-		"@typescript-eslint/parser": "^6.14.0",
+		"@typescript-eslint/eslint-plugin": "^6.16.0",
+		"@typescript-eslint/parser": "^6.16.0",
 		"dotenv": "^16.3.1",
-		"eslint": "^8.55.0",
+		"eslint": "^8.56.0",
 		"kleur": "^4.1.5",
 		"prettier": "^3.1.1",
 		"prompts": "^2.4.2",
-		"tsx": "^4.6.2",
+		"tsx": "^4.7.0",
 		"typescript": "^5.3.3",
-		"wrangler": "^3.20.0"
+		"wrangler": "^3.22.1"
 	},
 	"packageManager": "pnpm@8.12.1"
 }
