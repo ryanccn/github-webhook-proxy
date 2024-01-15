@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   hono:
-    specifier: ^3.11.10
-    version: 3.11.10
+    specifier: ^3.12.3
+    version: 3.12.3
   valibot:
     specifier: ^0.24.1
     version: 0.24.1
@@ -1341,8 +1341,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /hono@3.11.10:
-    resolution: {integrity: sha512-vizPp5PfVq5dwgN+EM+8v7RHlvrrEbnpkHtM2GMsl6KICA/MvWcnEMJ5L8SjYPxueB8VJMwc6nzzgKj5Vovp7g==}
+  /hono@3.12.3:
+    resolution: {integrity: sha512-eymmA0t4YzoBlaZhfcJiR6wC9tIdIgx68fdHYCpbKf0RMYXux+uJjwuZSAa2pKPNXZd6K6oGgizqaiLDvQ5jzg==}
     engines: {node: '>=16.0.0'}
     dev: false
 
