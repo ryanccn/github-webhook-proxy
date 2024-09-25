@@ -1,6 +1,21 @@
 {
 	"compilerOptions": {
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"target": "es2022",
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"moduleDetection": "force",
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"module": "preserve",
+		"lib": ["es2022"],
+		"types": ["@cloudflare/workers-types"],
+		"incremental": true,
 		"noEmit": true
 	},
-	"references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.worker.json" }]
+	"include": ["**/*.js", "**/*.ts"]
 }

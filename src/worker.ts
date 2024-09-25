@@ -1,5 +1,8 @@
 import { Hono } from "hono";
-import { object, string, minLength, safeParse } from "valibot";
+import { bearerAuth } from "hono/bearer-auth";
+
+import { object, string, minLength, pipe } from "valibot";
+import { vValidator } from "@hono/valibot-validator";
 
 import { generateSecret, normalizeDiscordWebhook, validate } from "./lib";
 
@@ -47,32 +50,43 @@ app.post(`/:key`, async (c) => {
 		return c.json({ ok: false, error: "No x-github-event header provided!" }, 400);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const data = JSON.parse(new TextDecoder().decode(rawData));
 
 	let suppress = false;
 
 	try {
-		if (event === "push") {
-			if (
-				(data.ref as string)?.startsWith("refs/heads/renovate/") ||
-				(data.ref as string)?.startsWith("refs/heads/dependabot/")
-			) {
-				suppress = true;
+		switch (event) {
+			case "push": {
+				if (
+					(data.ref as string)?.startsWith("refs/heads/renovate/") ||
+					(data.ref as string)?.startsWith("refs/heads/dependabot/")
+				) {
+					suppress = true;
+				}
+
+				break;
 			}
-		} else if (event === "pull_request") {
-			if (
-				data.pull_request.user?.id === RENOVATE_ID ||
-				data.pull_request.user?.id === DEPENDABOT_ID
-			) {
-				suppress = true;
+			case "pull_request": {
+				if (
+					data.pull_request.user?.id === RENOVATE_ID ||
+					data.pull_request.user?.id === DEPENDABOT_ID
+				) {
+					suppress = true;
+				}
+
+				break;
 			}
-		} else if (event === "issue") {
-			if (data.issue.user?.id === RENOVATE_ID || data.issue.user?.id === DEPENDABOT_ID) {
-				suppress = true;
+			case "issue": {
+				if (data.issue.user?.id === RENOVATE_ID || data.issue.user?.id === DEPENDABOT_ID) {
+					suppress = true;
+				}
+
+				break;
 			}
 		}
-	} catch (e) {
-		console.error(e);
+	} catch (error) {
+		console.error(error);
 	}
 
 	if (suppress) {
@@ -81,10 +95,10 @@ app.post(`/:key`, async (c) => {
 
 	const proxyHeaders = new Headers();
 	proxyHeaders.set("content-type", "application/json");
+
 	for (const header of c.req.raw.headers.keys()) {
 		const normalizedHeader = header.toLowerCase();
 		if (normalizedHeader.startsWith("x-github-") || normalizedHeader === "user-agent")
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			proxyHeaders.append(header, c.req.raw.headers.get(header)!);
 	}
 
@@ -92,9 +106,19 @@ app.post(`/:key`, async (c) => {
 
 	if (c.env.UPSTREAM_URL) {
 		upstreamUrl = c.env.UPSTREAM_URL;
+	} else if (c.env.UPSTREAM_URLS) {
+		const upstreamUrls = c.env.UPSTREAM_URLS.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean);
+
+		const randIdx = Math.max(
+			Math.floor(Math.random() * upstreamUrls.length),
+			Math.floor(Math.random() * upstreamUrls.length),
+		);
+
+		upstreamUrl = upstreamUrls[randIdx]!;
 	} else {
-		const upstreamUrls = c.env.UPSTREAM_URLS.split(",").filter(Boolean);
-		upstreamUrl = upstreamUrls[Math.floor(Math.random() * upstreamUrls.length)];
+		throw new Error("Neither UPSTREAM_URL nor UPSTREAM_URLS was provided!");
 	}
 
 	const upstreamRes = await fetch(normalizeDiscordWebhook(upstreamUrl), {
@@ -104,38 +128,41 @@ app.post(`/:key`, async (c) => {
 	});
 
 	if (!upstreamRes.ok) {
-		return c.json({ ok: false, data: await upstreamRes.json() }, upstreamRes.status);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return c.json({ ok: false, data: await upstreamRes.json() }, upstreamRes.status as any);
 	}
 
 	return c.json({ ok: true, suppressed: false }, 202);
 });
 
-const apiNewSchema = object({ name: string([minLength(1)]) });
+app.post(
+	"/api/new",
 
-app.post("/api/new", async (c) => {
-	const authHeader = c.req.header("authorization");
-	if (!c.env.API_SECRET || authHeader !== `Bearer ${c.env.API_SECRET}`) {
-		return c.json({ ok: false, error: "unauthorized" }, 401);
-	}
+	(c, next) =>
+		bearerAuth({
+			token: c.env.API_SECRET || [],
+		})(c, next),
 
-	const body = await c.req.json<unknown>();
-	const parsedBody = safeParse(apiNewSchema, body);
+	vValidator(
+		"json",
+		object({
+			name: pipe(string(), minLength(1)),
+		}),
+	),
 
-	if (!parsedBody.success) {
-		return c.json({ ok: false, error: "bad request" }, 400);
-	}
+	async (c) => {
+		const { name } = c.req.valid("json");
 
-	const { name } = parsedBody.data;
+		const existing = await c.env.WEBHOOK_SECRETS.get(name);
+		if (existing) {
+			return c.json({ ok: false, error: "already exists" }, 400);
+		}
 
-	const existing = await c.env.WEBHOOK_SECRETS.get(name);
-	if (existing) {
-		return c.json({ ok: false, error: "already exists" }, 400);
-	}
-
-	const secret = generateSecret();
-	await c.env.WEBHOOK_SECRETS.put(name, secret);
-	return c.json({ ok: true, secret });
-});
+		const secret = generateSecret();
+		await c.env.WEBHOOK_SECRETS.put(name, secret);
+		return c.json({ ok: true, secret });
+	},
+);
 
 app.onError((error, c) => {
 	console.error(error);

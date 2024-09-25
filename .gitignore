@@ -9,5 +9,8 @@
 
 .vscode/
 .idea/
+.zed/
 
 node_modules/
+
+*.tsbuildinfo
